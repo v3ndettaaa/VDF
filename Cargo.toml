@@ -1,0 +1,31 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "src-tauri"]
+exclude = ["fuzz"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-only"
+repository = "https://github.com/v3ndettaaa/VDF"
+
+[workspace.dependencies]
+vdf-core = { path = "crates/vdf-core" }
+vdf-document = { path = "crates/vdf-document" }
+vdf-pdf = { path = "crates/vdf-pdf" }
+vdf-render = { path = "crates/vdf-render" }
+vdf-input = { path = "crates/vdf-input" }
+vdf-persist = { path = "crates/vdf-persist" }
+vdf-search = { path = "crates/vdf-search" }
+vdf-diag = { path = "crates/vdf-diag" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+proptest = "1"
+regex = "1"
+crossbeam-channel = "0.5"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

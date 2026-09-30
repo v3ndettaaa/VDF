@@ -1,0 +1,11 @@
+[package]
+name = "vdf-search"
+description = "Text indexing, search/replace, OCR adapter, recognizer architecture (M4)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+vdf-core = { workspace = true }
+regex = { workspace = true }

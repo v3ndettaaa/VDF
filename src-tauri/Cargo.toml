@@ -1,0 +1,29 @@
+[package]
+name = "vdf-app"
+description = "VDF Tauri v2 application shell: windows, dialogs, IPC, platform glue"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+default-run = "vdf-app"
+
+[lib]
+name = "vdf_app_lib"
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+vdf-core = { workspace = true }
+vdf-document = { workspace = true }
+vdf-diag = { workspace = true }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+vdf-render = { workspace = true }
+vdf-persist = { workspace = true }
+vdf-search = { workspace = true }

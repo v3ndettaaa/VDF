@@ -1,0 +1,17 @@
+[package]
+name = "vdf-bench"
+description = "Headless scenario benchmarks and regression gates (PASS/WARN/FAIL)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "vdf-bench"
+path = "src/main.rs"
+
+[dependencies]
+vdf-core = { workspace = true }
+vdf-document = { workspace = true }
+vdf-diag = { workspace = true }
+serde_json = { workspace = true }

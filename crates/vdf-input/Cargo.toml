@@ -1,0 +1,10 @@
+[package]
+name = "vdf-input"
+description = "Pointer/stylus abstraction, gesture engine, stroke pipeline, brushes (M2)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+vdf-core = { workspace = true }

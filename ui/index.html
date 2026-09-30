@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VDF</title>
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="app-header">
+        <div id="tabs" class="tabs" role="tablist" aria-label="Documents"></div>
+        <div id="toolbar" class="toolbar" role="toolbar" aria-label="Tools"></div>
+      </header>
+      <div class="app-main">
+        <nav id="sidebar" class="sidebar" aria-label="Sidebar"></nav>
+        <main id="viewport" class="viewport" aria-label="Document viewport"></main>
+      </div>
+      <footer id="statusbar" class="statusbar"></footer>
+    </div>
+    <div id="palette-root"></div>
+    <div id="dialog-root"></div>
+    <div id="a11y-live" class="visually-hidden" aria-live="polite"></div>
+    <script type="module" src="./app/main.ts"></script>
+  </body>
+</html>

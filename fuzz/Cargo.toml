@@ -1,0 +1,19 @@
+[package]
+name = "vdf-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+vdf-core = { path = "../crates/vdf-core" }
+
+[[bin]]
+name = "vdf_core_affine"
+path = "fuzz_targets/vdf_core_affine.rs"
+test = false
+doc = false
+bench = false

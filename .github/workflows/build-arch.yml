@@ -1,0 +1,39 @@
+name: build-arch
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pkgbuild:
+    runs-on: ubuntu-24.04
+    container: archlinux:base-devel
+    timeout-minutes: 60
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm \
+            git rust nodejs npm \
+            webkit2gtk-4.1 gtk3 base-devel
+
+      - name: Check out source
+        run: |
+          git clone "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" .
+          git checkout "$GITHUB_SHA"
+
+      - name: Build package with makepkg
+        run: |
+          useradd -m builder || true
+          chown -R builder:builder .
+          sudo -u builder makepkg -f --noconfirm --noprogressbar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vdf-arch
+          if-no-files-found: error
+          path: ./*.pkg.tar.zst

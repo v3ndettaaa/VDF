@@ -1,0 +1,15 @@
+[package]
+name = "vdf-core"
+description = "VDF shared low-level types: IDs, errors, units, geometry, tiles"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

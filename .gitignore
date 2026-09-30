@@ -1,0 +1,27 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Node
+node_modules/
+ui/dist/
+*.log
+
+# Fuzzing
+fuzz/target
+fuzz/corpus
+fuzz/artifacts
+fuzz/coverage
+fuzz/Cargo.lock
+
+# Packaging build artifacts
+packaging/arch/*.pkg.tar.zst
+packaging/arch/*.tar.gz
+packaging/arch/src/
+packaging/arch/pkg/
+packaging/arch/vdf/
+packaging/arch/*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,32 @@
+{
+  "name": "vdf",
+  "private": true,
+  "version": "0.1.0",
+  "description": "VDF — professional native desktop PDF editor",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:ui": "vite build",
+    "typecheck": "tsc --noEmit",
+    "tauri": "tauri",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "cargo test --workspace --lib && vitest run",
+    "test:integration": "cargo test -p vdf-app --test integration",
+    "test:render": "node scripts/placeholder-test.mjs render",
+    "test:e2e": "node scripts/placeholder-test.mjs e2e",
+    "test:performance": "cargo run -q -p vdf-bench -- --scenario smoke",
+    "test:fuzz": "node scripts/run-fuzz.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/node": "^26.6.3",
+    "typescript": "^5.5.0",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
+  }
+}
