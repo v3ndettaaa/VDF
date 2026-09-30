@@ -2,8 +2,8 @@
 
 Date: 2026-09-30
 Branch: `main`
-Final commit: `a40459d` (full: a40459da2f3797c72842e79a3aac6556cf71bb01)
-CI: _verified after push (see bottom)_
+Final commit: `a8199f7` (full: a8199f7a6bb66798ce56ca245e71aad372de2647)
+CI: verified after push (results at bottom)
 
 ---
 
@@ -237,5 +237,7 @@ process-liveness + clean logs, and by its CI build.
 
 ## Final commit hash
 
-Filled in below after the milestone commit was created; CI verification recorded after
-the push.
+Milestone code commit: `a8199f7a6bb66798ce56ca245e71aad372de2647` on `main` — contains
+the complete M0 implementation and this report; the commit-hash lines in this report
+were recorded in the immediate bookkeeping commit (a commit cannot contain its own
+hash). CI verification results are recorded below after the push.
