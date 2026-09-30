@@ -17,7 +17,7 @@ jobs:
       - name: Install build dependencies
         run: |
           pacman -Syu --noconfirm \
-            git rust nodejs npm \
+            git rust nodejs npm clang \
             webkit2gtk-4.1 gtk3 base-devel sudo
 
       - name: Check out source
