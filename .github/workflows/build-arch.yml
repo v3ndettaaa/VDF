@@ -18,12 +18,10 @@ jobs:
         run: |
           pacman -Syu --noconfirm \
             git rust nodejs npm \
-            webkit2gtk-4.1 gtk3 base-devel
+            webkit2gtk-4.1 gtk3 base-devel sudo
 
       - name: Check out source
-        run: |
-          git clone "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" .
-          git checkout "$GITHUB_SHA"
+        uses: actions/checkout@v4
 
       - name: Build package with makepkg
         run: |
