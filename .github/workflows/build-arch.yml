@@ -27,6 +27,7 @@ jobs:
         run: |
           useradd -m builder || true
           chown -R builder:builder .
+          cd packaging/arch
           sudo -u builder makepkg -f --noconfirm --noprogressbar
 
       - name: Upload artifact
@@ -34,4 +35,4 @@ jobs:
         with:
           name: vdf-arch
           if-no-files-found: error
-          path: ./*.pkg.tar.zst
+          path: packaging/arch/*.pkg.tar.zst
