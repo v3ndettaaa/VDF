@@ -12,7 +12,7 @@
     "tauri": "tauri",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "cargo test --workspace --lib && vitest run",
-    "test:integration": "cargo test -p vdf-app --test integration",
+    "test:integration": "cargo test -p vdf-app --test integration && cargo test -p vdf-app --test e2e_headless",
     "test:render": "node scripts/placeholder-test.mjs render",
     "test:e2e": "node scripts/placeholder-test.mjs e2e",
     "test:performance": "cargo run -q -p vdf-bench -- --scenario smoke",

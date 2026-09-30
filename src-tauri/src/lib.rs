@@ -1,17 +1,26 @@
 //! vdf-app — the Tauri v2 shell (MASTER_PLAN.md §5).
 //!
 //! Owns everything platform-facing: the window, native dialogs, the JSON
-//! command surface, and (from M1) the custom URI-scheme protocol handlers
-//! that carry tiles and thumbnails as raw bytes. The core crates never learn
-//! about any of this.
+//! command surface, and the custom URI-scheme protocols that carry tiles
+//! and thumbnails as raw bytes. The core crates never learn about any of
+//! this.
 //!
-//! M0 command surface (deliberately tiny — no PDF parsing happens yet):
-//! - `vdf_app_info` → build/platform metadata
-//! - `vdf_open_file` → native pick dialog, returns name + size only
+//! M1 command surface (viewer):
+//! - `vdf_app_info`, `vdf_open_file` (M0 dialog helper)
+//! - `vdf_open_document` / `vdf_close_document`
+//! - `vdf_viewport` / `vdf_poll` / `vdf_pan` / `vdf_zoom` / `vdf_fit_width`
+//! - `vdf_set_page_mode` / `vdf_rotate` / `vdf_goto_page` / `vdf_outline`
+//! - `vdf_request_thumbnails`
+//! - protocols: `vdf-tile://d{doc}/{key}` and `vdf-thumb://d{doc}/{page}/{w}`
 
-use serde::Serialize;
+pub mod commands;
+mod protocols;
+pub mod state;
+
 use tauri_plugin_dialog::DialogExt;
 
+use serde::Serialize;
+use state::AppCore;
 use vdf_diag::MetricsRegistry;
 
 /// Process-wide diagnostics registry (fed by subsystems from M1 on).
@@ -44,13 +53,13 @@ fn vdf_app_info(state: tauri::State<Diag>) -> AppInfo {
 #[derive(Serialize)]
 pub struct FileInfo {
     pub name: String,
+    pub path: String,
     pub size_bytes: u64,
     pub extension: String,
 }
 
-/// Opens a native file dialog and reports the picked file's name and size.
-/// M0 contract: this is the *entire* interaction with the file — no reading
-/// of contents, no parsing, no rendering (MASTER_PLAN.md §16, M0 scope).
+/// Opens a native file dialog and reports the picked file's name, path and
+/// size. Reading/parsing happens in `vdf_open_document`.
 #[tauri::command]
 async fn vdf_open_file(app: tauri::AppHandle) -> Result<Option<FileInfo>, String> {
     let picked = app
@@ -75,6 +84,7 @@ async fn vdf_open_file(app: tauri::AppHandle) -> Result<Option<FileInfo>, String
         .unwrap_or_default();
     Ok(Some(FileInfo {
         name,
+        path: path.to_string_lossy().into_owned(),
         size_bytes: meta.len(),
         extension,
     }))
@@ -82,10 +92,32 @@ async fn vdf_open_file(app: tauri::AppHandle) -> Result<Option<FileInfo>, String
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app_core = AppCore::new().expect("init AppCore");
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .manage(app_core)
         .manage(Diag(MetricsRegistry::new()))
-        .invoke_handler(tauri::generate_handler![vdf_app_info, vdf_open_file])
+        .invoke_handler(tauri::generate_handler![
+            vdf_app_info,
+            vdf_open_file,
+            commands::vdf_open_document,
+            commands::vdf_close_document,
+            commands::vdf_viewport,
+            commands::vdf_poll,
+            commands::vdf_pan,
+            commands::vdf_zoom,
+            commands::vdf_fit_width,
+            commands::vdf_set_page_mode,
+            commands::vdf_rotate,
+            commands::vdf_goto_page,
+            commands::vdf_outline,
+            commands::vdf_request_thumbnails,
+            commands::vdf_tile_meta,
+            commands::vdf_page_label,
+        ])
+        .setup(|_app| Ok(()));
+    let builder = protocols::register(builder);
+    builder
         .run(tauri::generate_context!())
         .expect("error while running VDF");
 }

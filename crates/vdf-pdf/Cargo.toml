@@ -7,4 +7,6 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+mupdf-sys = { workspace = true }
 vdf-core = { workspace = true }
+thiserror = { workspace = true }

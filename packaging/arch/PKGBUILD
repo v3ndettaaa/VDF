@@ -28,6 +28,9 @@ prepare() {
   fi
   cd "${srcdir}/${pkgname}"
 
+  # The vendored MuPDF submodule is part of the build.
+  git submodule update --init --recursive --depth 1
+
   # Frontend dependencies
   npm ci --no-audit --no-fund
 

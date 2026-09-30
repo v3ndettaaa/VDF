@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppStore, SIDEBAR_PANELS, ZOOM_MAX_PERCENT, ZOOM_MIN_PERCENT } from "./state/app";
+import { app, AppStore, SIDEBAR_PANELS, ZOOM_MAX_PERCENT, ZOOM_MIN_PERCENT } from "./state/app";
 import { filterCommands, commandForShortcut, formatBytes } from "./state/commands";
 import { Store } from "./state/store";
 
@@ -110,15 +110,25 @@ describe("AppStore theme/tool/sidebar", () => {
 });
 
 describe("command registry", () => {
-  it("empty filter returns everything", () => {
+  it("empty filter returns the shell commands", () => {
     expect(filterCommands("").length).toBeGreaterThanOrEqual(10);
   });
 
   it("filters case-insensitively over title and id", () => {
-    const zoom = filterCommands("zoom");
-    expect(zoom.some((c) => c.id === "zoom.in")).toBe(true);
     expect(filterCommands("TOOL.PEN").some((c) => c.id === "tool.pen")).toBe(true);
     expect(filterCommands("zzz-no-such-command")).toHaveLength(0);
+  });
+
+  it("reveals viewer commands only while a document is open", () => {
+    // no doc open: zoom commands are hidden
+    expect(filterCommands("zoom").some((c) => c.id === "zoom.in")).toBe(false);
+    const store = new AppStore();
+    store.setActiveDoc({ id: 1, name: "a.pdf", pageCount: 3 });
+    // simulate for the module-level store used by commands.ts
+    app.setActiveDoc({ id: 1, name: "a.pdf", pageCount: 3 });
+    expect(filterCommands("zoom").some((c) => c.id === "zoom.in")).toBe(true);
+    expect(commandForShortcut("Ctrl+1")?.id).toBe("zoom.fitWidth");
+    app.setActiveDoc(null);
   });
 
   it("binds known shortcuts", () => {

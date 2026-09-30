@@ -190,6 +190,77 @@
   color: var(--text);
 }
 
+/* Pages (thumbnails) panel */
+
+.pages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.page-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--surface-2);
+}
+
+.page-cell:hover {
+  border-color: var(--border-strong);
+}
+
+.page-cell.active {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+.page-cell canvas {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 2px;
+}
+
+.page-cell:not(.ready) canvas {
+  background: var(--surface-3);
+}
+
+.page-label {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* Outline panel */
+
+.outline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.outline-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
 /* Viewport */
 
 .viewport {

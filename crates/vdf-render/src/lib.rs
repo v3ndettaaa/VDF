@@ -1,16 +1,25 @@
-//! vdf-render — tile rendering, scheduling, caching, and transport
-//! (scheduler + caches arrive in M1).
+//! vdf-render — tile rendering, scheduling, caching, and transport.
 //!
-//! M0 establishes the two boundary traits everything else renders through:
-//! - [`transport::RenderTransport`] — how finished tiles reach the compositor.
-//!   The document renderer knows nothing about Tauri events, PNG encoding,
-//!   DOM, Canvas, or browser APIs (MASTER_PLAN.md §6).
-//! - [`rasterizer::Rasterizer`] — how a tile's pixels get produced, so tile
-//!   logic is testable without MuPDF (the real `MupdfRasterizer` lands in M1;
-//!   [`rasterizer::SyntheticRasterizer`] is the deterministic test fake).
+//! M1 delivers the working pipeline (MASTER_PLAN.md §8, §10):
+//! - [`layout`] — page layout math for the page modes
+//! - [`zoom`] — the central focal-point `DocumentZoomController`
+//! - [`cache`] — LRU tile cache with memory budgets + generation guard
+//! - [`scheduler`] — viewport → prioritized tile jobs → worker pool →
+//!   generation-checked results into cache + transport
+//! - [`renderer`] — `TileRenderer` trait + the MuPDF-backed implementation
+//! - [`transport`] — the render transport abstraction (M0) with the stale
+//!   drop rule
 
-pub mod rasterizer;
+pub mod cache;
+pub mod layout;
+pub mod renderer;
+pub mod scheduler;
 pub mod transport;
+pub mod zoom;
 
-pub use rasterizer::{Rasterizer, SyntheticRasterizer};
+pub use cache::{MemoryBudgets, TileCache};
+pub use layout::{DocumentLayout, PageMode, PageRect, compute_layout, page_view_size};
+pub use renderer::{FakeTileRenderer, MupdfTileRenderer, TileJob, TileRenderer};
+pub use scheduler::{RenderScheduler, SchedulerConfig, TILE_PX, ViewportState};
 pub use transport::{FinishedTile, MemoryTransport, RenderTransport, TransportStats};
+pub use zoom::{DocumentZoomController, ZOOM_MAX, ZOOM_MIN};

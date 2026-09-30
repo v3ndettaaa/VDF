@@ -22,6 +22,20 @@ export interface FileInfo {
   extension: string;
 }
 
+export interface ActiveDoc {
+  id: number;
+  name: string;
+  pageCount: number;
+}
+
+export interface ViewportStats {
+  cacheTiles: number;
+  cacheBytes: number;
+  renderedTotal: number;
+  staleDropped: number;
+  activePage: number;
+}
+
 export interface AppState {
   theme: Theme;
   tabs: Tab[];
@@ -29,10 +43,14 @@ export interface AppState {
   activeTool: ToolId;
   sidebarOpen: boolean;
   sidebarPanel: SidebarPanelId;
-  /** Zoom in percent (100 = 100%). */
+  /** Zoom in percent (100 = 100%). Mirror of the Rust zoom controller. */
   zoom: number;
   statusMessage: string;
   lastOpenedFile: FileInfo | null;
+  /** The currently open shell document (null in browser mode / no doc). */
+  activeDoc: ActiveDoc | null;
+  viewportStats: ViewportStats | null;
+  pageCount: number;
 }
 
 export const SIDEBAR_PANELS: ReadonlyArray<{ id: SidebarPanelId; title: string }> = [
@@ -77,6 +95,9 @@ export class AppStore extends Store<AppState> {
       zoom: 100,
       statusMessage: "Ready",
       lastOpenedFile: null,
+      activeDoc: null,
+      viewportStats: null,
+      pageCount: 0,
     });
   }
 
@@ -118,6 +139,24 @@ export class AppStore extends Store<AppState> {
 
   setStatus(message: string): void {
     this.set({ statusMessage: message });
+  }
+
+  /** Registers a successfully opened shell document. */
+  setActiveDoc(doc: ActiveDoc | null): void {
+    this.set({ activeDoc: doc, pageCount: doc?.pageCount ?? 0 });
+  }
+
+  setViewportStats(stats: ViewportStats): void {
+    this.set({ viewportStats: stats });
+  }
+
+  setLayout(pageCount: number, _docH: number): void {
+    this.update((s) => (s.pageCount === pageCount ? {} : { pageCount }));
+  }
+
+  /** Zoom mirror from the Rust controller (authoritative). */
+  setZoomFromShell(percent: number): void {
+    this.update((s) => (Math.abs(s.zoom - percent) < 0.1 ? {} : { zoom: clampZoom(percent) }));
   }
 
   /**

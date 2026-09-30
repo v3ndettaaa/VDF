@@ -9,3 +9,8 @@ repository.workspace = true
 [dependencies]
 vdf-core = { workspace = true }
 vdf-pdf = { workspace = true }
+mupdf-sys = { workspace = true }
+crossbeam-channel = { workspace = true }
+
+[dev-dependencies]
+vdf-search = { workspace = true }

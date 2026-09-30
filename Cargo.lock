@@ -1827,6 +1827,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "mupdf-sys"
+version = "0.1.0"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "ndk"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3837,6 +3844,8 @@ dependencies = [
 name = "vdf-app"
 version = "0.1.0"
 dependencies = [
+ "crossbeam-channel",
+ "mupdf-sys",
  "serde",
  "serde_json",
  "tauri",
@@ -3845,6 +3854,7 @@ dependencies = [
  "vdf-core",
  "vdf-diag",
  "vdf-document",
+ "vdf-pdf",
  "vdf-persist",
  "vdf-render",
  "vdf-search",
@@ -3858,6 +3868,8 @@ dependencies = [
  "vdf-core",
  "vdf-diag",
  "vdf-document",
+ "vdf-pdf",
+ "vdf-render",
 ]
 
 [[package]]
@@ -3897,6 +3909,8 @@ dependencies = [
 name = "vdf-pdf"
 version = "0.1.0"
 dependencies = [
+ "mupdf-sys",
+ "thiserror 2.0.21",
  "vdf-core",
 ]
 
@@ -3914,8 +3928,11 @@ dependencies = [
 name = "vdf-render"
 version = "0.1.0"
 dependencies = [
+ "crossbeam-channel",
+ "mupdf-sys",
  "vdf-core",
  "vdf-pdf",
+ "vdf-search",
 ]
 
 [[package]]
