@@ -176,6 +176,13 @@ Fixes made during the local loop (all found by the tests above, none hidden):
 - Property test expected a object to survive its own undo — corrected to the real
   invariant (undo-to-pristine removes it; redo restores same id + last opacity).
 - `tauri.conf.json` bundle targets: fixed `appImage` naming → `"all"`.
+- CI loop after first push (root-caused from logs each time, never weakened):
+  1. minimal toolchain profile lacks rustfmt/clippy → `--component` flags added;
+  2. Arch job used manual `git clone` (no auth) → `actions/checkout@v4`;
+  3. `makepkg` ran in repo root but PKGBUILD lives in `packaging/arch/` → cd added;
+  4. lint job missing Tauri system libs (glib/gio pkg-config) → apt deps added;
+  5. Arch container missing `clang` (PKGBUILD makedepends) → added to pacman list;
+  6. `tauri build --bundles none` invalid in tauri-cli v2 → `--no-bundle`.
 - vitest expectation adjusted to the intended simple substring filter semantics.
 
 ## Build result
@@ -240,4 +247,17 @@ process-liveness + clean logs, and by its CI build.
 Milestone code commit: `a8199f7a6bb66798ce56ca245e71aad372de2647` on `main` — contains
 the complete M0 implementation and this report; the commit-hash lines in this report
 were recorded in the immediate bookkeeping commit (a commit cannot contain its own
-hash). CI verification results are recorded below after the push.
+hash). Three CI fixes were applied after the first push (see Problems & fixes);
+the final pushed state is `7bb1e1b` + this report update.
+
+## CI verification (run 36762434644/34629/34635, push of `7bb1e1b`)
+
+| Workflow | Result | Deliverables |
+|---|---|---|
+| lint-test | **success** (3m43s) | fmt, clippy -D warnings, all Rust tests, bench smoke, tsc, vitest |
+| build-windows | **success** (9m08s) | artifacts: `vdf-windows-msi`, `vdf-windows-portable` |
+| build-arch | **success** (6m11s) | artifact: `vdf-arch` (.pkg.tar.zst via makepkg) |
+| build-linux | **success** (5m39s) | artifact: `vdf-linux` (.deb + .AppImage) |
+
+All four workflows green on the final M0 state. CI fix loop details are in
+Problems & fixes below.
