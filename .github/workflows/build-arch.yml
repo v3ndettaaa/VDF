@@ -17,8 +17,13 @@ jobs:
       - name: Install build dependencies
         run: |
           pacman -Syu --noconfirm \
-            git rust nodejs npm clang \
+            git rustup nodejs npm clang unzip \
             webkit2gtk-4.1 gtk3 base-devel sudo
+
+      - name: Pin Rust toolchain (matches rust-toolchain.toml)
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup default 1.98.1
 
       - name: Check out source
         uses: actions/checkout@v4
