@@ -114,16 +114,34 @@ fn build_mupdf(mupdf: &Path) {
         args.insert(3, "XCFLAGS=-fPIC".into());
     }
 
-    let make = if on_windows { "mingw32-make" } else { "make" };
-    let status = Command::new(make)
-        .args(&args)
-        .current_dir(mupdf)
-        .status()
-        .expect(
-            "failed to run make for MuPDF; on Windows this requires MSYS2 mingw32-make \
-             (see MASTER_PLAN.md §15 build strategy)",
-        );
-    if !status.success() {
-        panic!("MuPDF make build failed with {status}");
+    let make_candidates: &[&str] = if on_windows {
+        // MSYS2 provides `make`; some setups expose `mingw32-make`.
+        &["make", "mingw32-make"]
+    } else {
+        &["make"]
+    };
+    let mut last_err = None;
+    let mut status = None;
+    for make in make_candidates {
+        match Command::new(make).args(&args).current_dir(mupdf).status() {
+            Ok(st) if st.success() => {
+                status = Some(st);
+                break;
+            }
+            Ok(st) => {
+                last_err = Some(format!("{make} exited with {st}"));
+            }
+            Err(e) => {
+                last_err = Some(format!("{make}: {e}"));
+            }
+        }
+    }
+    match status {
+        Some(_) => {}
+        None => panic!(
+            "MuPDF make build failed ({}) — on Windows this requires MSYS2 make; \
+             see MASTER_PLAN.md §15 build strategy",
+            last_err.unwrap_or_default()
+        ),
     }
 }

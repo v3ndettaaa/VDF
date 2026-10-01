@@ -2,7 +2,7 @@
 
 Date: 2026-10-01
 Branch: `main`
-Milestone commit: _recorded at the bottom (a commit cannot contain its own hash)_
+Milestone commit: `0610d18cf83db53e8e8faf73844892b5a143f5e8` (hash recorded in the bookkeeping commit that follows — a commit cannot contain its own hash)
 CI: _verified after push (results at bottom)_
 
 ---
@@ -240,5 +240,5 @@ event tracing, which exposed the unwritten `last_viewport` retry field.
 
 ## Final commit hash
 
-Recorded in the bookkeeping commit immediately after the milestone commit (a commit
-cannot contain its own hash); CI verification results below.
+Milestone commit: `0610d18cf83db53e8e8faf73844892b5a143f5e8` on `main` — contains the complete M1 implementation and this
+report. CI verification results are recorded below after the push.
