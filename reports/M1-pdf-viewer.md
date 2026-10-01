@@ -177,6 +177,25 @@ Fixes made during the loop (all found by tests/debugging, none hidden):
   resolved only the `_imp` symbol; version now flows from version.h via build.rs.
 - Reserved keyword `gen` (Rust 2024), float type annotations, borrow conflicts
   (pinning closure snapshots the viewport), clippy lints.
+- **CI loop findings** (each root-caused from logs):
+  1. Arch container: MuPDF's `extract` feature needs `unzip` at build time —
+     disabled (`extract=no`); it is not used by VDF.
+  2. Windows MinGW: `deskew.c` uses SSE4.1 intrinsics unguarded — `XCFLAGS=-msse4.1`
+     (SSE4.1 is 2008+ hardware).
+  3. `vdf-bench` gained a second binary — `default-run` pinned so `cargo run`
+     stays stable.
+  4. An attempt to work around static-lib link placement via
+     `cargo:rustc-link-arg` from a dependency build script **broke native-lib
+     propagation everywhere** (all fz_* symbols unresolved) — reverted; the
+     default `rustc-link-lib` mechanism is correct, and the lesson is recorded
+     in ADR 0002.
+  5. Two scheduler tests were timing-flaky under machine load — quiescence
+     detection made patient (30 quiet polls × 5 ms) and the over-strict
+     "no straggler results" assertion replaced by the real invariant
+     (no tile renders twice); repeated green runs verified.
+  6. A local makepkg debug run left a poisoned cargo build-script cache
+     (paths pointing into the deleted packaging tree); cleaning the package's
+     build dirs fixed it. No code change required.
 
 ## Build result
 

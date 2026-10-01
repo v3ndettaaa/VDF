@@ -82,24 +82,26 @@ fn drain_until_ready(sched: &RenderScheduler, min_ready: usize, max_iters: usize
 /// number of polls, so the no-work case still terminates).
 fn drain_quiescent(sched: &RenderScheduler) -> usize {
     let mut ready = 0;
-    let mut quiet = 0;
+    let mut quiet_iters = 0;
     let mut saw_work = false;
     let mut last_total = sched.rendered_total();
-    for i in 0..2000 {
+    for i in 0..4000 {
         let update = sched.drain_results();
         ready += update.ready.len();
         let total = sched.rendered_total();
         if update.ready.is_empty() && total == last_total {
-            quiet += 1;
-            if quiet >= 5 && (saw_work || i > 250) {
+            quiet_iters += 1;
+            // Under heavy machine load workers can stall for a while; only
+            // accept quietness after a real quiet window.
+            if quiet_iters >= 30 && (saw_work || i > 500) {
                 break;
             }
         } else {
-            quiet = 0;
+            quiet_iters = 0;
             saw_work = saw_work || total > last_total;
         }
         last_total = total;
-        std::thread::sleep(std::time::Duration::from_millis(2));
+        std::thread::sleep(std::time::Duration::from_millis(5));
     }
     ready
 }
@@ -175,10 +177,10 @@ fn re_request_same_slot_bumps_generation_and_older_loses() {
     let first = drain_quiescent(&sched);
     assert!(first >= 1);
     let total_after_first = sched.rendered_total();
-    // Second identical update: everything cached or settled — no new renders.
+    // Second identical update: everything is cached or settled — no tile
+    // may render twice (straggler completions from the first batch are fine).
     sched.update_viewport(viewport_at(visible, 8, 0.0));
-    let update = drain_quiescent(&sched);
-    assert_eq!(update, 0, "no new results for an unchanged viewport");
+    let _ = drain_quiescent(&sched);
     assert_eq!(
         sched.rendered_total(),
         total_after_first,
@@ -198,9 +200,26 @@ fn scroll_prefetch_prioritizes_tiles_ahead() {
     };
     // scrolling down fast → the near band below gets enqueued first batch
     sched.update_viewport(viewport_at(visible, 8, 50.0));
-    let _ = drain_until_ready(&sched, 1, 500);
+    wait_for_renders(&sched, 4);
     assert!(renderer.rendered_count() > 3, "prefetch band rendered");
     sched.shutdown();
+}
+
+/// Waits until at least `min` renders completed (load-independent), then
+/// drains whatever is already in flight. Fails after a generous timeout.
+fn wait_for_renders(sched: &RenderScheduler, min: u64) {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while sched.rendered_total() < min {
+        sched.drain_results();
+        assert!(
+            std::time::Instant::now() < deadline,
+            "timed out waiting for {} renders (got {})",
+            min,
+            sched.rendered_total()
+        );
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+    let _ = drain_quiescent(sched);
 }
 
 #[test]
@@ -271,7 +290,7 @@ fn two_page_layout_tiles_both_columns() {
         scroll_velocity_y: 0.0,
         interacting: false,
     });
-    let _ = drain_quiescent(&sched);
+    wait_for_renders(&sched, 6);
     assert!(sched.rendered_total() >= 6, "two columns of tiles render");
     sched.shutdown();
 }

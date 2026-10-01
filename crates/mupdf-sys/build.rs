@@ -79,7 +79,9 @@ fn main() {
         ))
         .status();
     if !matches!(probe, Ok(st) if st.success()) {
-        println!("cargo:warning=mupdf-sys: libmupdf.a symbol probe failed — the archive may be incomplete");
+        println!(
+            "cargo:warning=mupdf-sys: libmupdf.a symbol probe failed — the archive may be incomplete"
+        );
     }
 
     println!("cargo:rustc-link-search=native={}", libs_dir.display());
@@ -87,7 +89,6 @@ fn main() {
     println!("cargo:rustc-link-lib=static=mupdf-third");
 
     // System libraries MuPDF's thirdparty bundle ends up needing.
-    let mut system_link_args: Vec<String> = Vec::new();
     if cfg!(target_os = "windows") {
         for lib in ["user32", "gdi32", "advapi32", "ole32", "shell32", "stdc++"] {
             println!("cargo:rustc-link-lib={lib}");
@@ -100,35 +101,7 @@ fn main() {
         for lib in ["stdc++", "m", "pthread", "dl"] {
             println!("cargo:rustc-link-lib={lib}");
         }
-        system_link_args = ["stdc++", "m", "pthread", "dl"]
-            .iter()
-            .map(|l| format!("-l{l}"))
-            .collect();
     }
-
-    // Belt and braces: some rustc/environment combinations place
-    // `rustc-link-lib` static archives BEFORE the objects that reference
-    // them (observed in a minimal Arch container), which makes every fz_*
-    // symbol unresolved. Passing the archives as explicit inputs at the END
-    // of the link line is placement-proof for bin targets. Duplicate
-    // inclusion is harmless for static archives.
-    if cfg!(target_os = "windows") {
-        // msvc-style linkers reject positional .a; keep default mechanism.
-    } else {
-        let shim_a = out_shim_archive();
-        println!("cargo:rustc-link-arg={}", shim_a.display());
-        println!("cargo:rustc-link-arg={}", libmupdf.display());
-        println!("cargo:rustc-link-arg={}", libthird.display());
-        for arg in system_link_args {
-            println!("cargo:rustc-link-arg={arg}");
-        }
-    }
-}
-
-/// The cc-crate archive for the shim lives in OUT_DIR.
-fn out_shim_archive() -> PathBuf {
-    let out = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR"));
-    out.join("libvdfshim.a")
 }
 
 fn build_mupdf(mupdf: &Path) {
