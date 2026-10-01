@@ -15,7 +15,7 @@
     "test:integration": "cargo test -p vdf-app --test integration && cargo test -p vdf-app --test e2e_headless",
     "test:render": "node scripts/placeholder-test.mjs render",
     "test:e2e": "node scripts/placeholder-test.mjs e2e",
-    "test:performance": "cargo run -q -p vdf-bench -- --scenario smoke",
+    "test:performance": "cargo run -q -p vdf-bench --bin vdf-bench -- --scenario smoke",
     "test:fuzz": "node scripts/run-fuzz.mjs"
   },
   "dependencies": {

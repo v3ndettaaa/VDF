@@ -107,10 +107,16 @@ fn build_mupdf(mupdf: &Path) {
         "build=release".into(),
         "HAVE_X11=no".into(),
         "HAVE_GLUT=no".into(),
+        // The docx/odt extract feature needs unzip at build time and is not
+        // used by VDF; disable it for reproducible builds everywhere.
+        "extract=no".into(),
         "libs".into(),
     ];
-    // -fPIC is meaningless on Windows (and mingw gcc warns it off).
-    if !on_windows {
+    if on_windows {
+        // deskew.c uses SSE4.1 intrinsics unguarded; mingw gcc defaults to
+        // baseline x86-64. SSE4.1 is 2008+ hardware — fine per plan targets.
+        args.insert(3, "XCFLAGS=-msse4.1".into());
+    } else {
         args.insert(3, "XCFLAGS=-fPIC".into());
     }
 
