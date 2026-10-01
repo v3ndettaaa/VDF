@@ -6,6 +6,8 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
+default-run = "vdf-bench"
+
 [[bin]]
 name = "vdf-bench"
 path = "src/main.rs"
