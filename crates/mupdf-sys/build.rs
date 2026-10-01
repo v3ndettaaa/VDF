@@ -69,28 +69,66 @@ fn main() {
         .warnings(false)
         .compile("vdfshim");
 
+    // Symbol sanity check: fail here with a clear message instead of a
+    // confusing link error later.
+    let probe = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!(
+            "ar p {} mupdf/fitz/context.o 2>/dev/null | grep -c fz_new_context_imp",
+            libmupdf.display()
+        ))
+        .status();
+    if !matches!(probe, Ok(st) if st.success()) {
+        println!("cargo:warning=mupdf-sys: libmupdf.a symbol probe failed — the archive may be incomplete");
+    }
+
     println!("cargo:rustc-link-search=native={}", libs_dir.display());
     println!("cargo:rustc-link-lib=static=mupdf");
     println!("cargo:rustc-link-lib=static=mupdf-third");
 
     // System libraries MuPDF's thirdparty bundle ends up needing.
+    let mut system_link_args: Vec<String> = Vec::new();
     if cfg!(target_os = "windows") {
-        println!("cargo:rustc-link-lib=user32");
-        println!("cargo:rustc-link-lib=gdi32");
-        println!("cargo:rustc-link-lib=advapi32");
-        println!("cargo:rustc-link-lib=ole32");
-        println!("cargo:rustc-link-lib=shell32");
-        println!("cargo:rustc-link-lib=stdc++");
+        for lib in ["user32", "gdi32", "advapi32", "ole32", "shell32", "stdc++"] {
+            println!("cargo:rustc-link-lib={lib}");
+        }
     } else if cfg!(target_os = "macos") {
         println!("cargo:rustc-link-lib=framework=CoreFoundation");
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=c++");
     } else {
-        println!("cargo:rustc-link-lib=stdc++");
-        println!("cargo:rustc-link-lib=m");
-        println!("cargo:rustc-link-lib=pthread");
-        println!("cargo:rustc-link-lib=dl");
+        for lib in ["stdc++", "m", "pthread", "dl"] {
+            println!("cargo:rustc-link-lib={lib}");
+        }
+        system_link_args = ["stdc++", "m", "pthread", "dl"]
+            .iter()
+            .map(|l| format!("-l{l}"))
+            .collect();
     }
+
+    // Belt and braces: some rustc/environment combinations place
+    // `rustc-link-lib` static archives BEFORE the objects that reference
+    // them (observed in a minimal Arch container), which makes every fz_*
+    // symbol unresolved. Passing the archives as explicit inputs at the END
+    // of the link line is placement-proof for bin targets. Duplicate
+    // inclusion is harmless for static archives.
+    if cfg!(target_os = "windows") {
+        // msvc-style linkers reject positional .a; keep default mechanism.
+    } else {
+        let shim_a = out_shim_archive();
+        println!("cargo:rustc-link-arg={}", shim_a.display());
+        println!("cargo:rustc-link-arg={}", libmupdf.display());
+        println!("cargo:rustc-link-arg={}", libthird.display());
+        for arg in system_link_args {
+            println!("cargo:rustc-link-arg={arg}");
+        }
+    }
+}
+
+/// The cc-crate archive for the shim lives in OUT_DIR.
+fn out_shim_archive() -> PathBuf {
+    let out = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR"));
+    out.join("libvdfshim.a")
 }
 
 fn build_mupdf(mupdf: &Path) {
